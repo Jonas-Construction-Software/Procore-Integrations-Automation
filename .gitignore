@@ -1,0 +1,77 @@
+# =========================
+# Playwright / Test Artifacts
+# =========================
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+playwright/.auth/
+auth-state.json
+junit.xml
+results.json
+
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+config.local.js
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Coverage / Reports
+# =========================
+coverage/
+html-report/
+TEST*.xml
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Build / Distribution / Packages
+# =========================
+dist/
+target/
+*.class
+*.jar
+*.war
+*.exe
+*.app
+
+# =========================
+# Temporary / Misc
+# =========================
+tmp/
+temp/
+
+# =========================
+# Large media files
+# =========================
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+.gitnexus

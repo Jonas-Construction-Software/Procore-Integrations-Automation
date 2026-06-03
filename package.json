@@ -1,0 +1,22 @@
+{
+  "name": "playwright-automation-skeleton",
+  "description": "Playwright automation framework skeleton for QA teams",
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.2.3",
+    "dotenv": "^16.4.7",
+    "fs-extra": "^11.2.0",
+    "rimraf": "^5.0.5",
+    "npm-run-all": "^4.1.5"
+  },
+  "scripts": {
+    "clear": "node Utils/clearDirectory.mjs && rimraf test-results playwright-report",
+    "smoke": "npx playwright test --grep @smoke --project=chromium",
+    "smoke:run": "run-s clear smoke",
+    "regression": "npx playwright test --grep @regression --project=chromium",
+    "regression:run": "run-s clear regression",
+    "test:all": "npx playwright test --project=chromium",
+    "test:all:run": "run-s clear test:all"
+  }
+}
