@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import Login from "../Helper/jdocLogin.js";
+import Login from "../Helper/Login.js";
 import { AppConfig } from "../config.js";
 import Screenshot from "../Utils/Screenshot.js";
 import fs from 'fs';
