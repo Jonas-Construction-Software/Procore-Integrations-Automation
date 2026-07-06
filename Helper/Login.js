@@ -33,5 +33,16 @@ export default new class Login {
   async loginSecondClient(page) {
     await this.login(page, AppConfig.SecondUserName, AppConfig.SecondUserPassword);
   }
+
+  /**
+   * Logs into Procore using the ProcoreBaseURL from config.
+   * Navigates to the URL (BearerToken-based auth) and waits for the page to be ready.
+   */
+  async loginToProcore(page) {
+    const actionHelper = new ActionsHelper(page);
+    await actionHelper.actionMethod(ActionTypes.NAVIGATETOURL, null, AppConfig.ProcoreBaseURL);
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("load");
+  }
 }
 

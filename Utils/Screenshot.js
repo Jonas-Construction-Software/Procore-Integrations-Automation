@@ -12,6 +12,8 @@ export default class Screenshot {
     if (!fs.existsSync(screenshotDir)) {
       fs.mkdirSync(screenshotDir, { recursive: true });
     }
+    // Scroll to top so the blue nav bar appears at the top of the full-page screenshot
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
       path: path.join(screenshotDir, `${saveTitle}_${status}.png`),
       fullPage: true
