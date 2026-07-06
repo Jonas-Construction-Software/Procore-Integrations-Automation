@@ -7,7 +7,7 @@ import path from 'path';
 
 
 test.beforeEach(async ({ page }) => {
-  await Login.login(page, AppConfig.UserName);
+  await Login.loginToProcore(page);
 });
 
 

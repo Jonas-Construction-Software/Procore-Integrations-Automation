@@ -16,12 +16,31 @@ export const AppConfig = {
   get BaseURL() {
     switch (this.EnvName) {
       case "qa":
-        return process.env.BASE_URL || "https://your-app-qa.example.com";
+        return process.env.BASE_URL || "https://integratortest.jonasportal.com/events-home?BearerToken=9a6433d7-a594-4734-a027-7da45516406e";
       case "staging":
         return process.env.BASE_URL || "https://your-app-staging.example.com";
       default:
         return process.env.BASE_URL || "https://your-app-qa.example.com";
     }
+  },
+
+  get ProcoreBaseURL() {
+    switch (this.EnvName) {
+      case "qa":
+        return process.env.PROCORE_BASE_URL || "https://integratortest.jonasportal.com/events-home?BearerToken=9a6433d7-a594-4734-a027-7da45516406e";
+      case "staging":
+        return process.env.PROCORE_BASE_URL || "https://your-procore-staging.example.com";
+      default:
+        return process.env.PROCORE_BASE_URL || "https://your-procore-qa.example.com";
+    }
+  },
+
+  get ProcoreUserName() {
+    return process.env.PROCORE_USERNAME || "procore_testuser";
+  },
+
+  get ProcorePassword() {
+    return process.env.PROCORE_PASSWORD || "procore_testpassword";
   },
 
   get UserName() {
