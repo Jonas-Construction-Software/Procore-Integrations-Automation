@@ -85,12 +85,12 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
       await fillScoMappingForm(page, scenario);
       const tag = scenario.procoreSubcontractText;
 
-      const countNoCheckbox = await verifyResultDropdown(page, tag, `SCO_${tag}_Without_Include_Mapped_Entries`);
+      const { procoreCount: countNoCheckbox } = await verifyResultDropdown(page, tag, `SCO_${tag}_Without_Include_Mapped_Entries`);
       expect(countNoCheckbox).toBe(0);
 
       await page.check(mappingsLocators.includeMappedEntriesCheckbox);
       await page.waitForTimeout(1000);
-      const countWithCheckbox = await verifyResultDropdown(page, tag, `SCO_${tag}_With_Include_Mapped_Entries`, true, 'CE #014');
+      const { procoreCount: countWithCheckbox } = await verifyResultDropdown(page, tag, `SCO_${tag}_With_Include_Mapped_Entries`, true, 'CE #014');
       expect(countWithCheckbox).toBe(0);
     }
   });

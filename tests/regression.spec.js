@@ -72,14 +72,14 @@ test.describe("Regression Tests", { tag: ['@regression'] }, () => {
     // Smoke tests only assert the Procore result DD is blank for certain entries.
     // Here we verify that selecting 'CE #014' from the Procore result DD causes the
     // Jonas result DD to appear and be populated (populateJonasResult = true).
-    const count = await verifyResultDropdown(
+    const { jonasCount } = await verifyResultDropdown(
       page,
       'CE #014',
       'SCO_Regression_Jonas_DD_Populated',
       /*populateJonasResult=*/ true,
       /*procoreEntryToSelect=*/ 'CE #014',
     );
-    expect(count).toBeGreaterThan(0);
+    expect(jonasCount).toBeGreaterThan(0);
   });
 
   // ── PO Mapping ───────────────────────────────────────────────────────────
