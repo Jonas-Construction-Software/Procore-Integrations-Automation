@@ -196,7 +196,7 @@ test.describe("Regression Tests", { tag: ['@regression'] }, () => {
 
     // Confirm the chip/tag appears in the multiselect
     const selectedTag = page.locator(".col-md-4.col-sm-12 kendo-multiselect kendo-taglist").first();
-    await selectedTag.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(selectedTag).toContainText('LP0712', { timeout: 10000 });
 
     await Screenshot.takeScreenshot(page, 'IN775_Sync_Job_LP0712_Selected', 'Passed');
 
