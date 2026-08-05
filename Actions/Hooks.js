@@ -1,13 +1,21 @@
-import { test } from "@playwright/test";
+import { test as base } from "@playwright/test";
 import Login from "../Helper/Login.js";
 import { AppConfig } from "../config.js";
 import Screenshot from "../Utils/Screenshot.js";
 import fs from 'fs';
 import path from 'path';
 
+let _sharedPage = null;
 
-test.beforeEach(async ({ page }) => {
-  await Login.loginToProcore(page);
+const test = base.extend({
+  page: async ({ browser }, use) => {
+    if (!_sharedPage || _sharedPage.isClosed()) {
+      const context = await browser.newContext({ viewport: null });
+      _sharedPage = await context.newPage();
+      await Login.loginToProcore(_sharedPage);
+    }
+    await use(_sharedPage);
+  }
 });
 
 

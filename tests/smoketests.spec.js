@@ -1,155 +1,118 @@
 import test from "../Actions/Hooks.js";
-import '../Actions/Hooks.js';
-import { AppConfig } from "../config.js";
-import ActionsHelper from "../Actions/ActionHelper.js";
-import { ActionTypes, AssertionType } from "../Utils/actions.js";
 import { loginPageLocators } from "../pageObjects/LoginObjects.js";
 import { mappingsLocators } from "../pageObjects/MappingsObjects.js";
 import { integratorLocators } from "../pageObjects/IntegratorObjects.js";
 import { expect } from '@playwright/test';
-import { selectKendoOption, fillScoMappingForm, verifyResultDropdown, fillPccoMappingForm, verifyPccoResultDropdown, fillSubcontractMappingForm, verifySubcontractResultDropdown, fillPoMappingForm, verifyPoResultDropdown, fillSupplierMappingForm, verifySupplierResultDropdown, fillJobsMappingForm, verifyJobsResultDropdown } from '../Helper/MappingsHelper.js';
+import { fillScoMappingForm, verifyResultDropdown, fillPccoMappingForm, verifyPccoResultDropdown, fillSubcontractMappingForm, verifySubcontractResultDropdown, fillPoMappingForm, verifyPoResultDropdown, fillSupplierMappingForm, verifySupplierResultDropdown, fillJobsMappingForm, verifyJobsResultDropdown } from '../Helper/MappingsHelper.js';
 import { sortColumnAndVerify } from '../Helper/IntegrationHelper.js';
 
-
+test.describe.configure({ mode: 'serial' });
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify user can login successfully", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
     await expect(page).toHaveTitle(loginPageLocators.pageTitle, { timeout: 60000 });
   });
 
+  test("Verify all columns are sortable", async ({ page }) => {
+    await page.waitForSelector(integratorLocators.eventsGrid, { timeout: 15000 });
+
+    const columns = [
+      ['ID column',             integratorLocators.colIdHeader,            'Integration_ID_Column'],
+      ['Resource Id column',    integratorLocators.colResourceIdHeader,    'Integration_ResourceId_Column'],
+      ['Received At column',    integratorLocators.colReceivedAtHeader,    'Integration_ReceivedAt_Column'],
+      ['Handled At column',     integratorLocators.colHandledAtHeader,     'Integration_HandledAt_Column'],
+      ['Message Type column',   integratorLocators.colMessageTypeHeader,   'Integration_MessageType_Column'],
+      ['Action Type column',    integratorLocators.colActionTypeHeader,    'Integration_ActionType_Column'],
+      ['Json Payload column',   integratorLocators.colJsonPayloadHeader,   'Integration_JsonPayload_Column'],
+      ['Status column',         integratorLocators.colStatusHeader,        'Integration_Status_Column'],
+      ['Status Message column', integratorLocators.colStatusMessageHeader, 'Integration_StatusMessage_Column'],
+      ['Error Details column',  integratorLocators.colErrorDetailsHeader,  'Integration_ErrorDetails_Column'],
+    ];
+
+    for (const [label, locator, prefix] of columns) {
+      await test.step(label, () => sortColumnAndVerify(page, locator, prefix));
+    }
+  });
+
   test("Verify Mappings first dropdown has multiple options", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await page.click(mappingsLocators.mappingsTab);
     await page.waitForLoadState("domcontentloaded");
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
+    await page.click(mappingsLocators.firstDropdown);
     const options = page.locator(mappingsLocators.dropdownPopupItems);
     await options.first().waitFor({ state: 'visible', timeout: 15000 });
     const count = await options.count();
     expect(count).toBeGreaterThan(1);
   });
 
-  test("Verify SubContracts ChangeOrder mapping first dropdown has multiple options", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
-    await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
-    const scoOption = page.locator(mappingsLocators.scoTypeOption);
-    await scoOption.waitFor({ state: 'visible', timeout: 15000 });
-    await scoOption.click();
-    await page.waitForSelector('(//kendo-dropdownlist)[2]', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.scoFirstMappingDropdown);
-    const options = page.locator(mappingsLocators.dropdownPopupItems);
-    await options.first().waitFor({ state: 'visible', timeout: 15000 });
-    const count = await options.count();
-    expect(count).toBeGreaterThan(1);
-  });
+  for (const [label, typeOptLocator, mappingDDLocator] of [
+    ['SubContracts ChangeOrder', mappingsLocators.scoTypeOption,  mappingsLocators.scoFirstMappingDropdown],
+    ['Subcontracts',             mappingsLocators.subTypeOption,  mappingsLocators.subFirstMappingDropdown],
+    ['Purchase orders',          mappingsLocators.poTypeOption,   mappingsLocators.poFirstMappingDropdown],
+    ['Projects - Jobs',          mappingsLocators.jobsTypeOption, mappingsLocators.jobsFirstMappingDropdown],
+  ]) {
+    test(`Verify ${label} mapping first dropdown has multiple options`, async ({ page }) => {
+      await page.click(mappingsLocators.mappingsTab);
+      await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
+      await page.click(mappingsLocators.firstDropdown);
+      const typeOption = page.locator(typeOptLocator);
+      await typeOption.waitFor({ state: 'visible', timeout: 15000 });
+      await typeOption.click();
+      await page.waitForSelector('(//kendo-dropdownlist)[2]', { timeout: 15000 });
+      await page.click(mappingDDLocator);
+      const options = page.locator(mappingsLocators.dropdownPopupItems);
+      await options.first().waitFor({ state: 'visible', timeout: 15000 });
+      const count = await options.count();
+      expect(count).toBeGreaterThan(1);
+    });
+  }
 
   test("Verify SCO Mapping - Procore result dropdown is blank for unmapped entries", async ({ page }) => {
-    // ── Scenario 1: Procore SC0418 mapped to Jonas 000306 ───────────────────
-    await fillScoMappingForm(page, {
-      procoreSubcontractText: 'SC0418',
-      jonasSubcontractText: '000306',
-    });
+    const scenarios = [
+      { procoreSubcontractText: 'SC0418',   jonasSubcontractText: '000306' },
+      { procoreSubcontractText: 'SC0710-1', jonasSubcontractText: '000304' },
+    ];
 
-    // Without "Include Mapped Entries" checkbox
-    const countSC0418NoCheckbox = await verifyResultDropdown(
-      page, 'SC0418', 'SCO_SC0418_Without_Include_Mapped_Entries'
-    );
-    expect(countSC0418NoCheckbox).toBe(0);
+    for (const [i, scenario] of scenarios.entries()) {
+      if (i > 0) {
+        await page.reload();
+        await page.waitForLoadState('load');
+        await page.waitForTimeout(1000);
+      }
 
-    // With "Include Mapped Entries" checkbox checked
-    await page.check(mappingsLocators.includeMappedEntriesCheckbox);
-    await page.waitForTimeout(1000);
-    const countSC0418WithCheckbox = await verifyResultDropdown(
-      page, 'SC0418', 'SCO_SC0418_With_Include_Mapped_Entries', true, 'CE #014'
-    );
-    expect(countSC0418WithCheckbox).toBe(0);
+      await fillScoMappingForm(page, scenario);
+      const tag = scenario.procoreSubcontractText;
 
-    // ── Reload for Scenario 2 ────────────────────────────────────────────────
-    await page.reload();
-    await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
+      const countNoCheckbox = await verifyResultDropdown(page, tag, `SCO_${tag}_Without_Include_Mapped_Entries`);
+      expect(countNoCheckbox).toBe(0);
 
-    // ── Scenario 2: Procore SC0710-1 mapped to Jonas 000304 ─────────────────
-    await fillScoMappingForm(page, {
-      procoreSubcontractText: 'SC0710-1',
-      jonasSubcontractText: '000304',
-    });
-
-    // Without "Include Mapped Entries" checkbox
-    const countSC07101NoCheckbox = await verifyResultDropdown(
-      page, 'SC0710-1', 'SCO_SC0710-1_Without_Include_Mapped_Entries'
-    );
-    expect(countSC07101NoCheckbox).toBe(0);
-
-    // With "Include Mapped Entries" checkbox checked
-    await page.check(mappingsLocators.includeMappedEntriesCheckbox);
-    await page.waitForTimeout(1000);
-    const countSC07101WithCheckbox = await verifyResultDropdown(
-      page, 'SC0710-1', 'SCO_SC0710-1_With_Include_Mapped_Entries', true, 'CE #014'
-    );
-    expect(countSC07101WithCheckbox).toBe(0);
+      await page.check(mappingsLocators.includeMappedEntriesCheckbox);
+      await page.waitForTimeout(1000);
+      const countWithCheckbox = await verifyResultDropdown(page, tag, `SCO_${tag}_With_Include_Mapped_Entries`, true, 'CE #014');
+      expect(countWithCheckbox).toBe(0);
+    }
   });
 
   test("Verify PCCO Mapping - result dropdown contains expected entries", async ({ page }) => {
-    // ── Scenario A: first run ────────────────────────────────────────────────
-    await fillPccoMappingForm(page);
+    for (const run of ['A', 'B']) {
+      if (run === 'B') {
+        await page.reload();
+        await page.waitForLoadState('load');
+        await page.waitForTimeout(1000);
+      }
 
-    // Without "Include Mapped Entries" – look for PCCO 0329-015 (expected: present)
-    const countA_Unmapped = await verifyPccoResultDropdown(
-      page, 'PCCO 0329-015', 'PCCO_A_Without_Include_Mapped_Entries'
-    );
-    expect(countA_Unmapped).toBeGreaterThan(0);
+      await fillPccoMappingForm(page);
 
-    // With "Include Mapped Entries" checked – look for PCCO123456 (expected: present)
-    await page.check(mappingsLocators.includeMappedEntriesCheckbox);
-    await page.waitForTimeout(1000);
-    const countA_Mapped = await verifyPccoResultDropdown(
-      page, 'PCCO123456', 'PCCO_A_With_Include_Mapped_Entries'
-    );
-    expect(countA_Mapped).toBeGreaterThan(0);
+      const countUnmapped = await verifyPccoResultDropdown(page, 'PCCO 0329-015', `PCCO_${run}_Without_Include_Mapped_Entries`);
+      expect(countUnmapped).toBeGreaterThan(0);
 
-    // ── Reload for Scenario B ────────────────────────────────────────────────
-    await page.reload();
-    await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
-
-    // ── Scenario B: second run (fresh page, same entries) ────────────────────
-    await fillPccoMappingForm(page);
-
-    // Without "Include Mapped Entries" – look for PCCO 0329-015
-    const countB_Unmapped = await verifyPccoResultDropdown(
-      page, 'PCCO 0329-015', 'PCCO_B_Without_Include_Mapped_Entries'
-    );
-    expect(countB_Unmapped).toBeGreaterThan(0);
-
-    // With "Include Mapped Entries" checked – look for PCCO123456
-    await page.check(mappingsLocators.includeMappedEntriesCheckbox);
-    await page.waitForTimeout(1000);
-    const countB_Mapped = await verifyPccoResultDropdown(
-      page, 'PCCO123456', 'PCCO_B_With_Include_Mapped_Entries'
-    );
-    expect(countB_Mapped).toBeGreaterThan(0);
-  });
-
-  test("Verify Subcontracts mapping first dropdown has multiple options", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
-    await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
-    const subOption = page.locator(mappingsLocators.subTypeOption);
-    await subOption.waitFor({ state: 'visible', timeout: 15000 });
-    await subOption.click();
-    await page.waitForSelector('(//kendo-dropdownlist)[2]', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.subFirstMappingDropdown);
-    const options = page.locator(mappingsLocators.dropdownPopupItems);
-    await options.first().waitFor({ state: 'visible', timeout: 15000 });
-    const count = await options.count();
-    expect(count).toBeGreaterThan(1);
+      await page.check(mappingsLocators.includeMappedEntriesCheckbox);
+      await page.waitForTimeout(1000);
+      const countMapped = await verifyPccoResultDropdown(page, 'PCCO123456', `PCCO_${run}_With_Include_Mapped_Entries`);
+      expect(countMapped).toBeGreaterThan(0);
+    }
   });
 
   test("Verify Subcontract Mapping - unmapped entry visible, mapped entry visible with Include Mapped Entries", async ({ page }) => {
@@ -171,22 +134,6 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
       page, '000322', 'Sub_With_Include_Mapped_Entries'
     );
     expect(countWith).toBeGreaterThan(0);
-  });
-
-  test("Verify Purchase orders mapping first dropdown has multiple options", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
-    await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
-    const poOption = page.locator(mappingsLocators.poTypeOption);
-    await poOption.waitFor({ state: 'visible', timeout: 15000 });
-    await poOption.click();
-    await page.waitForSelector('(//kendo-dropdownlist)[2]', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.poFirstMappingDropdown);
-    const options = page.locator(mappingsLocators.dropdownPopupItems);
-    await options.first().waitFor({ state: 'visible', timeout: 15000 });
-    const count = await options.count();
-    expect(count).toBeGreaterThan(1);
   });
 
   test("Verify Purchase Order Mapping - unmapped entry visible, mapped entry visible with Include Mapped Entries", async ({ page }) => {
@@ -211,10 +158,9 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
   });
 
   test("Verify Supplier mapping first dropdown has multiple options", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await page.click(mappingsLocators.mappingsTab);
     await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
+    await page.click(mappingsLocators.firstDropdown);
     const supplierTypeOption = page.locator(mappingsLocators.supplierTypeOption);
     await supplierTypeOption.waitFor({ state: 'visible', timeout: 15000 });
     await supplierTypeOption.click();
@@ -227,7 +173,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
     await supplierRadio.waitFor({ state: 'visible', timeout: 10000 });
     await supplierRadio.check({ force: true });
     await page.waitForSelector('(//kendo-dropdownlist)[2]', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.supplierJonasCompanyDD);
+    await page.click(mappingsLocators.supplierJonasCompanyDD);
     const options = page.locator(mappingsLocators.dropdownPopupItems);
     await options.first().waitFor({ state: 'visible', timeout: 15000 });
     const count = await options.count();
@@ -256,22 +202,6 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
     expect(countWith).toBeGreaterThan(0);
   });
 
-  test("Verify Projects - Jobs mapping first dropdown has multiple options", async ({ page }) => {
-    const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
-    await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
-    const jobsOption = page.locator(mappingsLocators.jobsTypeOption);
-    await jobsOption.waitFor({ state: 'visible', timeout: 15000 });
-    await jobsOption.click();
-    await page.waitForSelector('(//kendo-dropdownlist)[2]', { timeout: 15000 });
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.jobsFirstMappingDropdown);
-    const options = page.locator(mappingsLocators.dropdownPopupItems);
-    await options.first().waitFor({ state: 'visible', timeout: 15000 });
-    const count = await options.count();
-    expect(count).toBeGreaterThan(1);
-  });
-
   test("Verify Projects - Jobs mapping - active jobs visible, inactive jobs appear with Include Inactive Jobs", async ({ page }) => {
     // ── Scenario 1: Include Inactive Jobs OFF ─────────────────────────────────
     // Active job "003321" should appear in the result DD by default
@@ -291,48 +221,6 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
       page, 'FROZJ', 'Jobs_With_Include_Inactive'
     );
     expect(countWith).toBeGreaterThan(0);
-  });
-
-});
-
-// ─── Integration Page – Column Sorting ──────────────────────────────────────
-
-test.describe("Integration Page - Column Sorting", { tag: ['@smoke'] }, () => {
-
-  // All columns are verified in a single test so only one browser/page is opened.
-  // Each column is tested as a named step, visible in the Playwright report.
-  test("Verify all columns are sortable", async ({ page }) => {
-    await page.waitForSelector(integratorLocators.eventsGrid, { timeout: 15000 });
-
-    await test.step("ID column", () =>
-      sortColumnAndVerify(page, integratorLocators.colIdHeader, 'Integration_ID_Column'));
-
-    await test.step("Resource Id column", () =>
-      sortColumnAndVerify(page, integratorLocators.colResourceIdHeader, 'Integration_ResourceId_Column'));
-
-    await test.step("Received At column", () =>
-      sortColumnAndVerify(page, integratorLocators.colReceivedAtHeader, 'Integration_ReceivedAt_Column'));
-
-    await test.step("Handled At column", () =>
-      sortColumnAndVerify(page, integratorLocators.colHandledAtHeader, 'Integration_HandledAt_Column'));
-
-    await test.step("Message Type column", () =>
-      sortColumnAndVerify(page, integratorLocators.colMessageTypeHeader, 'Integration_MessageType_Column'));
-
-    await test.step("Action Type column", () =>
-      sortColumnAndVerify(page, integratorLocators.colActionTypeHeader, 'Integration_ActionType_Column'));
-
-    await test.step("Json Payload column", () =>
-      sortColumnAndVerify(page, integratorLocators.colJsonPayloadHeader, 'Integration_JsonPayload_Column'));
-
-    await test.step("Status column", () =>
-      sortColumnAndVerify(page, integratorLocators.colStatusHeader, 'Integration_Status_Column'));
-
-    await test.step("Status Message column", () =>
-      sortColumnAndVerify(page, integratorLocators.colStatusMessageHeader, 'Integration_StatusMessage_Column'));
-
-    await test.step("Error Details column", () =>
-      sortColumnAndVerify(page, integratorLocators.colErrorDetailsHeader, 'Integration_ErrorDetails_Column'));
   });
 
 });

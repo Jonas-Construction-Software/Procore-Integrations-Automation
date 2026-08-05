@@ -17,4 +17,11 @@ export const integratorLocators = {
   // Sort indicator classes (used as fallback assertions)
   sortAscClass:  'k-i-sort-asc-small',
   sortDescClass: 'k-i-sort-desc-small',
+
+  // Synchronization page
+  syncTab:                "//a[@href='/sync']",
+  // .col-md-4.col-sm-12 is the unique container div for the job multiselect
+  syncJobMultiselect:     ".col-md-4.col-sm-12 kendo-multiselect",
+  syncJobMultiselectInput:".col-md-4.col-sm-12 kendo-multiselect input",
+  syncUploadNowButton:    "//button[normalize-space(.)='Upload Now']",
 };
