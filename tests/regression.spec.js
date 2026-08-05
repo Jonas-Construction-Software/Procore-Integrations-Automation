@@ -28,7 +28,7 @@ test.describe("Regression Tests", { tag: ['@regression'] }, () => {
 
   test("Verify events grid loads with at least one data row", async ({ page }) => {
     await page.waitForSelector(integratorLocators.eventsGrid, { timeout: 15000 });
-    const rows = page.locator('kendo-grid tbody tr');
+    const rows = page.locator('kendo-grid tbody tr:not(.k-grid-norecords)');
     await rows.first().waitFor({ state: 'visible', timeout: 15000 });
     const count = await rows.count();
     await Screenshot.takeScreenshot(page, 'Events_Grid_Data_Rows', 'Passed');
