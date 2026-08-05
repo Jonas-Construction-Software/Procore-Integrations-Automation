@@ -5,16 +5,13 @@ import Screenshot from "../Utils/Screenshot.js";
 import fs from 'fs';
 import path from 'path';
 
-let _sharedPage = null;
-
 const test = base.extend({
   page: async ({ browser }, use) => {
-    if (!_sharedPage || _sharedPage.isClosed()) {
-      const context = await browser.newContext({ viewport: null });
-      _sharedPage = await context.newPage();
-      await Login.loginToProcore(_sharedPage);
-    }
-    await use(_sharedPage);
+    const context = await browser.newContext({ viewport: null });
+    const page = await context.newPage();
+    await Login.loginToProcore(page);
+    await use(page);
+    await context.close();
   }
 });
 
