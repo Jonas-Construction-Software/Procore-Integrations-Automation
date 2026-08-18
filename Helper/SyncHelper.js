@@ -122,22 +122,26 @@ export async function runSyncUpload(page) {
     }
   });
 
+  const requestEntryMap = new Map();
+
   const onRequest = req => {
     if (req.resourceType() !== 'xhr' && req.resourceType() !== 'fetch') return;
     const url  = req.url();
     const body = req.postData();
     let bodyParsed = null;
     try { bodyParsed = body ? JSON.parse(body) : null; } catch { bodyParsed = body; }
-    apiCalls.push({ method: req.method(), url, requestBody: bodyParsed });
+    const entry = { method: req.method(), url, requestBody: bodyParsed };
+    apiCalls.push(entry);
+    requestEntryMap.set(req, entry);
   };
 
   const onResponse = async res => {
     if (res.request().resourceType() !== 'xhr' && res.request().resourceType() !== 'fetch') return;
-    const url = res.url();
+    const entry = requestEntryMap.get(res.request());
+    if (!entry) return;
     let body = null;
     try { body = await res.json(); } catch { try { body = await res.text(); } catch { body = null; } }
-    const entry = apiCalls.findLast(c => c.url === url);
-    if (entry) entry.responseBody = body;
+    entry.responseBody = body;
   };
 
   page.on('request',  onRequest);
