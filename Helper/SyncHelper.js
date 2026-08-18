@@ -149,7 +149,8 @@ export async function runSyncUpload(page) {
 
   await page.click(integratorLocators.syncUploadNowButton);
   const uploadBtn = page.locator(integratorLocators.syncUploadNowButton);
-  // Wait for button to be re-enabled as the durable completion signal for the upload
+  // Wait for button to become disabled (upload started) then re-enabled (upload done)
+  await expect(uploadBtn).toBeDisabled({ timeout: 15000 });
   await expect(uploadBtn).toBeEnabled({ timeout: 120000 });
 
   page.off('request',  onRequest);
