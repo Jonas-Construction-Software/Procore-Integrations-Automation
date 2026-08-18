@@ -41,3 +41,6 @@ temp/
 *.mov
 *.wmv
 .gitnexus
+Screenshots/
+Data/upload-payload-*.json
+Data/upload-tomorrow-*.json
