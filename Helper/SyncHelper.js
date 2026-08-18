@@ -106,7 +106,8 @@ export async function setSyncDateRanges(page, kendoStart, kendoEnd, displayStart
  */
 export async function runSyncUpload(page) {
   let syncResponse = null;
-  const apiCalls   = [];
+  const apiCalls         = [];
+  const pendingResponses = new Set();
 
   // Capture last-sync timestamp before this push
   const prePushState = await page.evaluate(async () => {
@@ -135,13 +136,17 @@ export async function runSyncUpload(page) {
     requestEntryMap.set(req, entry);
   };
 
-  const onResponse = async res => {
+  const onResponse = res => {
     if (res.request().resourceType() !== 'xhr' && res.request().resourceType() !== 'fetch') return;
     const entry = requestEntryMap.get(res.request());
     if (!entry) return;
-    let body = null;
-    try { body = await res.json(); } catch { try { body = await res.text(); } catch { body = null; } }
-    entry.responseBody = body;
+    const promise = (async () => {
+      let body = null;
+      try { body = await res.json(); } catch { try { body = await res.text(); } catch { body = null; } }
+      entry.responseBody = body;
+    })();
+    pendingResponses.add(promise);
+    promise.finally(() => pendingResponses.delete(promise));
   };
 
   page.on('request',  onRequest);
@@ -155,6 +160,9 @@ export async function runSyncUpload(page) {
 
   page.off('request',  onRequest);
   page.off('response', onResponse);
+
+  // Await all in-flight response body reads before processing apiCalls
+  await Promise.all([...pendingResponses]);
 
   const pageErrorMsg     = await page.locator('.errorMessageColor').textContent().catch(() => '');
   const pageSummaryItems = await page
