@@ -26,7 +26,7 @@ export async function fillScoMappingForm(page, {
   supplierText = 'ABCSUPP',
   jobsText = 'LP0712',
 }) {
-  await page.click(mappingsLocators.mappingsTab);
+  await page.locator(mappingsLocators.mappingsTab).evaluate(el => el.click());
   await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
 
   await selectKendoOption(page, mappingsLocators.firstDropdown, 'SubContracts ChangeOrder');
@@ -127,7 +127,7 @@ export async function fillPccoMappingForm(page, {
   subledgerText = 'AP',
   jobsText = 'LP0712',
 } = {}) {
-  await page.click(mappingsLocators.mappingsTab);
+  await page.locator(mappingsLocators.mappingsTab).evaluate(el => el.click());
   await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
 
   await selectKendoOption(page, mappingsLocators.firstDropdown, 'Prime Contract ChangeOrder');
@@ -186,7 +186,7 @@ export async function fillSubcontractMappingForm(page, {
   subledgerText = 'AP',
   jobsText = 'LP0712',
 } = {}) {
-  await page.click(mappingsLocators.mappingsTab);
+  await page.locator(mappingsLocators.mappingsTab).evaluate(el => el.click());
   await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
 
   // Open type dropdown then click the exact 'Subcontracts' option (not 'SubContracts ChangeOrder')
@@ -251,7 +251,7 @@ export async function fillPoMappingForm(page, {
   subledgerText = 'AP',
   jobsText = 'LP0712',
 } = {}) {
-  await page.click(mappingsLocators.mappingsTab);
+  await page.locator(mappingsLocators.mappingsTab).evaluate(el => el.click());
   await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
 
   // Open type dropdown then click the exact 'Purchase orders' option
@@ -312,7 +312,7 @@ export async function fillSupplierMappingForm(page, {
   jonasCompanyText = 'JT',
   subledgerText = 'AP',
 } = {}) {
-  await page.click(mappingsLocators.mappingsTab);
+  await page.locator(mappingsLocators.mappingsTab).evaluate(el => el.click());
   await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
 
   // Open type dropdown then click the Directory / Customers and Suppliers option
@@ -381,7 +381,7 @@ export async function fillJobsMappingForm(page, {
   jonasCompanyText = 'JT',
   procoreProjectText = '25-270',
 } = {}) {
-  await page.click(mappingsLocators.mappingsTab);
+  await page.locator(mappingsLocators.mappingsTab).evaluate(el => el.click());
   await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
 
   await page.click(mappingsLocators.firstDropdown);
