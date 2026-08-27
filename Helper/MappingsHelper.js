@@ -82,6 +82,7 @@ export async function verifyResultDropdown(page, optionText, screenshotTitle, po
   const entryToClick = selectText ? popup.filter({ hasText: selectText }) : null;
   const entryExists = entryToClick ? await entryToClick.count() : 0;
 
+  let jonasCount = 0;
   if (entryExists > 0) {
     // Select the entry — popup closes automatically
     await entryToClick.first().click();
@@ -97,7 +98,7 @@ export async function verifyResultDropdown(page, optionText, screenshotTitle, po
         await jonasDD.click();
         await page.waitForTimeout(1000);
         const jonasOptions = page.locator(mappingsLocators.dropdownPopupItems);
-        const jonasCount = await jonasOptions.count();
+        jonasCount = await jonasOptions.count();
         if (jonasCount > 0) {
           await jonasOptions.first().click();
           await page.waitForTimeout(500);
@@ -114,7 +115,7 @@ export async function verifyResultDropdown(page, optionText, screenshotTitle, po
     await page.waitForTimeout(500);
     await Screenshot.takeScreenshot(page, screenshotTitle, 'Passed');
   }
-  return count;
+  return { procoreCount: count, jonasCount };
 }
 
 /**

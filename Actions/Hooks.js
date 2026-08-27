@@ -1,13 +1,18 @@
-import { test } from "@playwright/test";
+import { test as base } from "@playwright/test";
 import Login from "../Helper/Login.js";
 import { AppConfig } from "../config.js";
 import Screenshot from "../Utils/Screenshot.js";
 import fs from 'fs';
 import path from 'path';
 
-
-test.beforeEach(async ({ page }) => {
-  await Login.loginToProcore(page);
+const test = base.extend({
+  page: async ({ browser }, use) => {
+    const context = await browser.newContext({ viewport: null });
+    const page = await context.newPage();
+    await Login.loginToProcore(page);
+    await use(page);
+    await context.close();
+  }
 });
 
 

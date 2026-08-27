@@ -2,6 +2,7 @@
 node_modules/
 test-results/
 playwright-report/
+Screenshots/
 blob-report/
 playwright/.cache/
 playwright/.auth/
@@ -41,3 +42,4 @@ temp/
 *.mov
 *.wmv
 .gitnexus
+Screenshots/
