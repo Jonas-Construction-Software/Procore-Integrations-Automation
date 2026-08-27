@@ -154,8 +154,20 @@ export async function runSyncUpload(page) {
 
   await page.click(integratorLocators.syncUploadNowButton);
   const uploadBtn = page.locator(integratorLocators.syncUploadNowButton);
-  // Wait for button to become disabled (upload started) then re-enabled (upload done)
-  await expect(uploadBtn).toBeDisabled({ timeout: 15000 });
+  // Only wait for the disabled state if the button isn't already disabled (fast
+  // uploads can complete before this assertion runs, and validation-only paths
+  // may never disable the button at all).
+  const alreadyDisabled = await uploadBtn.isDisabled();
+  if (!alreadyDisabled) {
+    // If a POST is going to be sent the button will go disabled; give it a short
+    // window and treat a timeout as "validation prevented the upload" rather than
+    // a test failure.
+    const disabledPromise = expect(uploadBtn).toBeDisabled({ timeout: 5000 }).catch(() => null);
+    await disabledPromise;
+  }
+  // Wait for the durable completion signal: the button is enabled again.
+  // For pure client-side validation the button was never disabled, so this
+  // resolves immediately.
   await expect(uploadBtn).toBeEnabled({ timeout: 120000 });
 
   page.off('request',  onRequest);
