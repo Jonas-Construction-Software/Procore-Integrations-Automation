@@ -1,0 +1,117 @@
+parameters:
+- name: EnvName
+  displayName: Environment Name
+  type: string
+  default: qa
+  values:
+    - qa
+    - staging
+
+- name: SUITE_NAME
+  displayName: Suite Name
+  type: string
+  default: smoke
+  values:
+    - smoke
+    - regression
+    - test:all
+
+trigger:
+- main
+
+variables:
+- group: common-pipeline-variables-group
+- name: EnvName
+  value: ${{ parameters.EnvName }}
+- name: SUITE_NAME
+  value: ${{ parameters.SUITE_NAME }}
+
+stages:
+
+- stage: Run_Playwright_Tests
+  displayName: Run Playwright Tests
+  condition: and(succeededOrFailed(), eq(variables['RunPipeline'], 'true'))
+  jobs:
+  - job: Execute_Tests
+    timeoutInMinutes: 200
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - script: npm ci
+      displayName: Install dependencies
+
+    - script: npx playwright install --with-deps
+      displayName: Install Playwright browsers
+
+    - script: npm run $(SUITE_NAME):run
+      displayName: Run $(SUITE_NAME) Suite
+      env:
+        CI: "true"
+        EnvName: $(EnvName)
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Playwright HTML Report
+      condition: always()
+      inputs:
+        targetPath: $(System.DefaultWorkingDirectory)/playwright-report
+        artifactName: playwright-report
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish JUnit Results
+      condition: always()
+      inputs:
+        targetPath: $(System.DefaultWorkingDirectory)/test-results/junit.xml
+        artifactName: junit-results
+
+    - task: PublishTestResults@2
+      displayName: Publish Test Results
+      condition: always()
+      continueOnError: true
+      inputs:
+        testRunner: JUnit
+        testResultsFiles: "test-results/junit.xml"
+        searchFolder: "$(System.DefaultWorkingDirectory)"
+        mergeTestResults: true
+        failTaskOnFailedTests: false
+        testRunTitle: 'Playwright Tests - $(SUITE_NAME)'
+        publishRunAttachments: true
+
+- stage: Notify
+  displayName: Post-Build Notification
+  dependsOn: Run_Playwright_Tests
+  condition: and(always(), eq(variables['SendEmail'], 'true'), eq(variables['RunPipeline'], 'true'))
+
+  variables:
+    TestStatus: $[ stageDependencies.Run_Playwright_Tests.Execute_Tests.result ]
+
+  jobs:
+  - job: EmailJob
+    displayName: Send Email
+    pool:
+      vmImage: 'windows-2022'
+    steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download JUnit Results
+      continueOnError: true
+      inputs:
+        artifact: junit-results
+        path: $(Pipeline.Workspace)/junit-results
+
+    - task: PowerShell@2
+      displayName: Send HTML Email Report
+      inputs:
+        targetType: 'filePath'
+        filePath: '$(Build.SourcesDirectory)/scripts/send-email-report.ps1'
+        arguments: >
+          -SmtpUser "$(SMTPUser)"
+          -SmtpPass "$(SMTPPass)"
+          -EmailRecipients "Louis.Psihalos@jonasconstruction.com"
+          -BuildNumber "$(Build.BuildNumber)"
+          -Branch "$(Build.SourceBranchName)"
+          -TestStatus "$(TestStatus)"
+          -SuiteName "$(SUITE_NAME)"
+          -BuildId "$(Build.BuildId)"
+          -TriggeredBy "$(Build.RequestedFor)"
+          -JunitPath "$(Pipeline.Workspace)/junit-results/junit.xml"
+          -BuildUrl "https://dev.azure.com/JonasConstruction/Jonas%20Construction%20Project/_build/results?buildId=$(Build.BuildId)&view=results"
+          -EnvName "$(EnvName)"
