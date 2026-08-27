@@ -140,6 +140,8 @@ export async function runSyncUpload(page) {
     if (res.request().resourceType() !== 'xhr' && res.request().resourceType() !== 'fetch') return;
     const entry = requestEntryMap.get(res.request());
     if (!entry) return;
+    entry.responseStatus = res.status();
+    entry.responseOk     = res.ok();
     const promise = (async () => {
       let body = null;
       try { body = await res.json(); } catch { try { body = await res.text(); } catch { body = null; } }
@@ -184,6 +186,9 @@ export async function runSyncUpload(page) {
   const issues = [];
   const syncCall = apiCalls.find(c => c.method === 'POST' && c.url.includes('/api/sync/to-procore'));
   syncResponse = syncCall?.responseBody ?? null;
+  if (syncCall && !syncCall.responseOk) {
+    issues.push({ level: 'http', message: `HTTP ${syncCall.responseStatus}` });
+  }
   if (syncResponse) {
     if (syncResponse.error) issues.push({ level: 'top', message: syncResponse.error });
     for (const detail of syncResponse.details ?? []) {
