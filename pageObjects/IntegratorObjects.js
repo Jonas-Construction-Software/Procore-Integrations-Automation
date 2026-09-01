@@ -1,4 +1,19 @@
 export const integratorLocators = {
+  // Nav
+  synchronizationTab: "//a[@href='/sync']",
+
+  // Sync page — Upload Costs section
+  syncJobMultiselectInput:      "p:has-text('Select the job you wish to upload costs for.') + div kendo-multiselect .k-input-inner",
+  syncRequisitionsCheckbox:     "#uploadRequisitionsCheckBox",
+  syncPaymentsCheckbox:         "#uploadPaymentCheckBox",
+  syncDirectCostsCheckbox:      "#uploadDirectCostCheckBox",
+  // Date inputs — use .nth(0) for start date and .nth(1) for end date
+  syncRequisitionsDateInputs:   "div.m-0.mt-3:has(#uploadRequisitionsCheckBox) kendo-dateinput input.k-input-inner",
+  syncPaymentsDateInputs:       "div.m-0.mt-3:has(#uploadPaymentCheckBox) kendo-dateinput input.k-input-inner",
+  syncDirectCostsDateInputs:    "div.m-0.mt-3:has(#uploadDirectCostCheckBox) kendo-dateinput input.k-input-inner",
+  syncUploadNowButton:          "//button[normalize-space(.)='Upload Now']",
+  syncUploadResponseMsg:        ".errorMessageColor",
+
   // Grid container — confirms the events-home grid has rendered
   eventsGrid: 'kendo-grid',
 

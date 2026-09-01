@@ -23,7 +23,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify Mappings first dropdown has multiple options", async ({ page }) => {
     const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await actionHelper.actionMethod(ActionTypes.CLICKVIAJS, mappingsLocators.mappingsTab);
     await page.waitForLoadState("domcontentloaded");
     await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
     const options = page.locator(mappingsLocators.dropdownPopupItems);
@@ -34,7 +34,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify SubContracts ChangeOrder mapping first dropdown has multiple options", async ({ page }) => {
     const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await actionHelper.actionMethod(ActionTypes.CLICKVIAJS, mappingsLocators.mappingsTab);
     await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
     await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
     const scoOption = page.locator(mappingsLocators.scoTypeOption);
@@ -138,7 +138,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify Subcontracts mapping first dropdown has multiple options", async ({ page }) => {
     const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await actionHelper.actionMethod(ActionTypes.CLICKVIAJS, mappingsLocators.mappingsTab);
     await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
     await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
     const subOption = page.locator(mappingsLocators.subTypeOption);
@@ -175,7 +175,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify Purchase orders mapping first dropdown has multiple options", async ({ page }) => {
     const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await actionHelper.actionMethod(ActionTypes.CLICKVIAJS, mappingsLocators.mappingsTab);
     await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
     await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
     const poOption = page.locator(mappingsLocators.poTypeOption);
@@ -212,7 +212,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify Supplier mapping first dropdown has multiple options", async ({ page }) => {
     const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await actionHelper.actionMethod(ActionTypes.CLICKVIAJS, mappingsLocators.mappingsTab);
     await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
     await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
     const supplierTypeOption = page.locator(mappingsLocators.supplierTypeOption);
@@ -258,7 +258,7 @@ test.describe("Smoke Tests", { tag: ['@smoke'] }, () => {
 
   test("Verify Projects - Jobs mapping first dropdown has multiple options", async ({ page }) => {
     const actionHelper = new ActionsHelper(page);
-    await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.mappingsTab);
+    await actionHelper.actionMethod(ActionTypes.CLICKVIAJS, mappingsLocators.mappingsTab);
     await page.waitForSelector('kendo-dropdownlist', { timeout: 15000 });
     await actionHelper.actionMethod(ActionTypes.CLICK, mappingsLocators.firstDropdown);
     const jobsOption = page.locator(mappingsLocators.jobsTypeOption);
